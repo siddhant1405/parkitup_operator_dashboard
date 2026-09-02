@@ -1,36 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ParkItUp Operator Portal
+
+Field-facing operator dashboard for logging, reviewing, and submitting parking site inspections. The app is currently frontend-only with a localStorage-backed mock API so product and field workflows can move while the backend is still pending.
+
+## Tech Stack
+
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS
+- shadcn/Radix UI primitives
+- React Hook Form + Zod
+- TanStack Query
+- `@vis.gl/react-google-maps` for the GPS/map picker
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies:
+
+```bash
+npm install
+```
+
+Create local environment variables:
+
+```bash
+cp .env.local.example .env.local
+```
+
+Required env vars:
+
+```bash
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
+```
+
+The Google key must have Maps JavaScript API and Geocoding API enabled. `NEXT_PUBLIC_GOOGLE_MAPS_MAP_ID` is optional and is used by the AdvancedMarker map implementation.
+
+Run the dev server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Available Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev
+npm run lint
+npx tsc --noEmit
+npm run build
+```
 
-## Learn More
+## Mock Data Layer
 
-To learn more about Next.js, take a look at the following resources:
+The mock API lives in `lib/api.ts`. It stores sites in browser `localStorage` under the `parkitup_sites` key and exposes the same boundary a backend client should replace later:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `getSites`
+- `getSite`
+- `createSite`
+- `updateSite`
+- `deleteSite`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+When the backend arrives, keep callers stable by replacing the internals of `lib/api.ts` rather than rewriting components. TanStack Query hooks are in `features/sites/api/queries.ts` and `features/sites/api/mutations.ts`.
 
-## Deploy on Vercel
+## Auth Placeholder
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Login is a placeholder gate. `app/login/page.tsx` accepts non-empty credentials and writes `parkitup_session` through `lib/auth.ts`. The active operator is currently `CURRENT_OPERATOR_ID` in `lib/constants.ts`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`proxy.ts` is the Next.js 16 Proxy file for the auth gate. In Next 16 this replaces the older `middleware.ts` convention.
+
+## Feature Structure
+
+The sites feature is organized feature-first:
+
+```text
+features/sites/
+  api/          TanStack Query hooks
+  components/   Site list, form, detail, map picker, shared site UI
+  schemas/      Zod schema and inferred TypeScript types
+  utils/        Labels, icons, formatting, photo helpers
+```
+
+Routes under `app/sites/*` are thin wrappers around feature components.
+
+## Site Model Notes
+
+`features/sites/schemas/site.ts` is the source of truth. Current notable fields include:
+
+- Parking type: `residential`, `society`, `commercial`, `corporate`, `mcd`, `standalone`, `free-parking`, `other`
+- Entry/exit: `{ configuration, entryGateCount, exitGateCount }`
+- Security/site conditions: guardroom, cameras, boom barrier, ANPR, lighting, signage, restrictions, POS device, vendor notes, internet quality
+- Pricing rules: applies-to day type, optional start/end time, rate type, amount
+- Risk factors and photos
+
+The form is one scrollable page on desktop and a six-step wizard on mobile.

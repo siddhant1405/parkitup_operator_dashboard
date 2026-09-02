@@ -42,6 +42,7 @@ export default function LoginPage() {
   })
 
   function onSubmit(values: LoginForm) {
+    // Placeholder gate only: any non-empty credentials create a local session.
     setIsLoading(true)
     setAuthCookie(values.email)
     router.push("/sites")

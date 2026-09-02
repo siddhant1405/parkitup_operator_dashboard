@@ -1,6 +1,5 @@
 import type {
   dayTypeValues,
-  entryExitValues,
   internetQualityValues,
   lightingValues,
   parkingTypeValues,
@@ -21,11 +20,6 @@ export const parkingTypeLabels: Record<
   standalone: "Standalone",
   "free-parking": "Free parking",
   other: "Other",
-}
-
-export const entryExitLabels: Record<(typeof entryExitValues)[number], string> = {
-  same: "Same gate",
-  separate: "Separate gates",
 }
 
 export const posDeviceLabels: Record<(typeof posDeviceValues)[number], string> = {

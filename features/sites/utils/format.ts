@@ -1,6 +1,6 @@
 import type { PricingRule, TimeOfDay } from "@/features/sites/schemas/site"
 
-export function formatTimeOfDay(value: TimeOfDay) {
+function formatTimeOfDay(value: TimeOfDay) {
   return `${value.time} ${value.period}`
 }
 

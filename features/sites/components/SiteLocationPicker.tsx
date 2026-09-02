@@ -9,7 +9,6 @@ import {
   type MapMouseEvent,
 } from "@vis.gl/react-google-maps"
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import type { SiteFormValues } from "@/features/sites/schemas/site"
 
@@ -36,6 +35,10 @@ export function SiteLocationPicker({ form }: SiteLocationPickerProps) {
   const address = useWatch({ control: form.control, name: "address" })
 
   const [suggestedAddress, setSuggestedAddress] = useState<string | null>(null)
+  const visibleSuggestedAddress =
+    suggestedAddress && address?.trim() !== suggestedAddress.trim()
+      ? suggestedAddress
+      : null
 
   /** Prevents Map onClick from firing right after a marker dragend. */
   const isDraggingRef = useRef(false)
@@ -97,7 +100,11 @@ export function SiteLocationPicker({ form }: SiteLocationPickerProps) {
 
   useEffect(() => {
     if (lat === 0 && lng === 0) return
-    reverseGeocode(lat, lng)
+    const timeoutId = window.setTimeout(() => {
+      void reverseGeocode(lat, lng)
+    }, 0)
+
+    return () => window.clearTimeout(timeoutId)
   }, [lat, lng, reverseGeocode])
 
   // ── Event handlers ───────────────────────────────────────────────────
@@ -129,17 +136,6 @@ export function SiteLocationPicker({ form }: SiteLocationPickerProps) {
       setSuggestedAddress(null)
     }
   }
-
-  // Clear suggestion when user manually edits address to match or clear
-  useEffect(() => {
-    if (
-      suggestedAddress &&
-      address &&
-      address.trim() === suggestedAddress.trim()
-    ) {
-      setSuggestedAddress(null)
-    }
-  }, [address, suggestedAddress])
 
   // ── Render ───────────────────────────────────────────────────────────
 
@@ -185,10 +181,10 @@ export function SiteLocationPicker({ form }: SiteLocationPickerProps) {
       )}
 
       {/* Address suggestion (rendered here; SiteForm places this after the address field) */}
-      {suggestedAddress && (
+      {visibleSuggestedAddress && (
         <div className="flex flex-wrap items-baseline gap-1 rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
           <span className="font-medium">Suggested:</span>
-          <span className="break-all">{suggestedAddress}</span>
+          <span className="break-all">{visibleSuggestedAddress}</span>
           <Button
             type="button"
             variant="link"

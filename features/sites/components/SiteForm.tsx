@@ -177,6 +177,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
   )
 
   function reportSaveError(err: unknown) {
+    // Keep the raw error visible during field testing; the toast is user-facing.
     console.error("Failed to save site:", err)
     if (err instanceof DOMException && err.name === "QuotaExceededError") {
       toast.error(

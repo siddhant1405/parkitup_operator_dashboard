@@ -1,6 +1,10 @@
 import { CURRENT_OPERATOR_ID } from "@/lib/constants"
 import type { Site, SiteFormValues } from "@/types/site"
 
+// Mock data boundary:
+// This file intentionally stores sites in browser localStorage while the
+// backend is pending. Preserve the exported function contracts when replacing
+// it with real API calls: getSites, getSite, createSite, updateSite, deleteSite.
 const DELAY_MS = 300
 const STORAGE_KEY = "parkitup_sites"
 
