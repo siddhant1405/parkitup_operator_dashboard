@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
-import { createSite, deleteSite, updateSite } from "@/lib/api"
+import { createSite, deleteSite, undeleteSite, updateSite } from "@/lib/api"
 import type { Site, SiteFormValues } from "@/types/site"
 
 import { sitesKeys } from "./queries"
@@ -35,6 +35,17 @@ export function useDeleteSite() {
 
   return useMutation({
     mutationFn: (id: string) => deleteSite(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: sitesKeys.all })
+    },
+  })
+}
+
+export function useUndeleteSite() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (id: string) => undeleteSite(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: sitesKeys.all })
     },

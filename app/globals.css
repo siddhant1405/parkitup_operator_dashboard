@@ -46,6 +46,10 @@
   --color-badge-draft-fg: var(--badge-draft-fg);
   --color-badge-submitted-bg: var(--badge-submitted-bg);
   --color-badge-submitted-fg: var(--badge-submitted-fg);
+  --color-badge-active-bg: var(--badge-active-bg);
+  --color-badge-active-fg: var(--badge-active-fg);
+  --color-badge-inactive-bg: var(--badge-inactive-bg);
+  --color-badge-inactive-fg: var(--badge-inactive-fg);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -56,51 +60,55 @@
 }
 
 :root {
-  --background: #f7f6f3;
-  --foreground: #111312;
+  --background: #F7F6F3;
+  --foreground: #1C1D1B;
   --card: #ffffff;
-  --card-foreground: #111312;
+  --card-foreground: #1C1D1B;
   --popover: #ffffff;
-  --popover-foreground: #111312;
-  --primary: #e8a23d;
-  --primary-foreground: #111312;
+  --popover-foreground: #1C1D1B;
+  --primary: #C7752E;
+  --primary-foreground: #ffffff;
   --secondary: #edebe5;
-  --secondary-foreground: #111312;
+  --secondary-foreground: #1C1D1B;
   --muted: #eae8e2;
   --muted-foreground: #6b6b66;
-  --accent: #fbe8c6;
-  --accent-foreground: #7a4e14;
+  --accent: #f5e0c8;
+  --accent-foreground: #6b3d14;
   --destructive: #c1502e;
   --destructive-foreground: #ffffff;
   --border: #e2dfd7;
   --input: #e2dfd7;
-  --ring: #e8a23d;
+  --ring: #C7752E;
   --success: #3f8f5f;
   --success-foreground: #ffffff;
-  --badge-draft-bg: #fbe8c6;
-  --badge-draft-fg: #7a4e14;
-  --badge-submitted-bg: #d9efe0;
-  --badge-submitted-fg: #1f4d33;
+  --badge-draft-bg: #f5e0c8;
+  --badge-draft-fg: #6b3d14;
+  --badge-submitted-bg: #dcebf5;
+  --badge-submitted-fg: #1f4f66;
+  --badge-active-bg: #d9efe0;
+  --badge-active-fg: #1f4d33;
+  --badge-inactive-bg: #f5ddd6;
+  --badge-inactive-fg: #7a2e1a;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: #f7f6f3;
-  --sidebar-foreground: #111312;
-  --sidebar-primary: #e8a23d;
-  --sidebar-primary-foreground: #111312;
-  --sidebar-accent: #fbe8c6;
-  --sidebar-accent-foreground: #7a4e14;
+  --sidebar: #F7F6F3;
+  --sidebar-foreground: #1C1D1B;
+  --sidebar-primary: #C7752E;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f5e0c8;
+  --sidebar-accent-foreground: #6b3d14;
   --sidebar-border: #e2dfd7;
-  --sidebar-ring: #e8a23d;
+  --sidebar-ring: #C7752E;
 }
 
 .dark {
   --background: #111312;
   --foreground: #f7f6f3;
-  --card: #171a18;
+  --card: #1A1C1B;
   --card-foreground: #f7f6f3;
   --popover: #171a18;
   --popover-foreground: #f7f6f3;
@@ -121,8 +129,12 @@
   --success-foreground: #111312;
   --badge-draft-bg: #3a2a12;
   --badge-draft-fg: #f0b45f;
-  --badge-submitted-bg: #163827;
-  --badge-submitted-fg: #6fcb93;
+  --badge-submitted-bg: #142e38;
+  --badge-submitted-fg: #7ecfe8;
+  --badge-active-bg: #163827;
+  --badge-active-fg: #6fcb93;
+  --badge-inactive-bg: #3a1d14;
+  --badge-inactive-fg: #e8947a;
   --chart-1: oklch(0.87 0 0);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
@@ -158,5 +170,44 @@
   input[type="number"]::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+  }
+}
+
+@layer components {
+  /* Elevated card surface: layered shadow + a card bg that steps off the page bg. */
+  .surface-card {
+    @apply bg-card border border-border shadow-md dark:shadow-lg dark:shadow-black/40;
+  }
+
+  /* Subtle lift + stronger shadow for interactive cards (SitesList). */
+  .surface-card-interactive {
+    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/40 dark:hover:shadow-black/50;
+  }
+
+  /* Low-contrast diagonal lane-marking texture — header/nav and empty states only. */
+  .stripe-texture {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      color-mix(in oklch, var(--foreground) 7%, transparent) 0px,
+      color-mix(in oklch, var(--foreground) 7%, transparent) 1px,
+      transparent 1px,
+      transparent 13px
+    );
+  }
+
+  /* Gradient treatment reserved for primary action buttons. */
+  .gradient-accent {
+    background-image: linear-gradient(135deg, #c7752e, #a85f22);
+  }
+  .dark .gradient-accent {
+    background-image: linear-gradient(135deg, #e8a23d, #c6821f);
+  }
+
+  /* Consistent "framed documentation" treatment for photos. */
+  .photo-frame {
+    @apply rounded-lg border border-border shadow-sm;
+  }
+  .photo-frame-lg {
+    @apply rounded-lg border border-border shadow-md;
   }
 }

@@ -23,7 +23,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { useDeleteSite } from "@/features/sites/api/mutations"
+import { useDeleteSite, useUndeleteSite } from "@/features/sites/api/mutations"
 
 interface DeleteSiteButtonProps {
   siteId: string
@@ -31,6 +31,8 @@ interface DeleteSiteButtonProps {
   label?: string
   size?: VariantProps<typeof buttonVariants>["size"]
   iconOnly?: boolean
+  deleteDisabled?: boolean
+  deleteDisabledReason?: string
 }
 
 export function DeleteSiteButton({
@@ -39,16 +41,34 @@ export function DeleteSiteButton({
   label = "Delete",
   size = "sm",
   iconOnly = false,
+  deleteDisabled = false,
+  deleteDisabledReason,
 }: DeleteSiteButtonProps) {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const deleteSite = useDeleteSite()
+  const undeleteSite = useUndeleteSite()
+
+  async function handleUndo() {
+    try {
+      await undeleteSite.mutateAsync(siteId)
+      toast.success("Site restored.")
+    } catch {
+      toast.error("Couldn't restore this site. Try again.")
+    }
+  }
 
   async function handleDelete() {
     try {
       await deleteSite.mutateAsync(siteId)
       setOpen(false)
-      toast.success("Site deleted.")
+      toast.success("Site deleted", {
+        duration: 5000,
+        action: {
+          label: "Undo",
+          onClick: handleUndo,
+        },
+      })
       router.push("/sites")
     } catch {
       toast.error("Couldn't delete this site. Try again.")
@@ -61,7 +81,28 @@ export function DeleteSiteButton({
     setOpen(true)
   }
 
-  const trigger = iconOnly ? (
+  const trigger = deleteDisabled ? (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex">
+          <Button
+            type="button"
+            variant="destructive"
+            size={iconOnly ? "icon-sm" : size}
+            className={cn("pointer-events-none opacity-40", className)}
+            disabled
+          >
+            <Trash2 className={iconOnly ? "h-3.5 w-3.5" : "h-4 w-4"} />
+            {!iconOnly && label}
+            {iconOnly && <span className="sr-only">Delete</span>}
+          </Button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-60 text-center">
+        {deleteDisabledReason ?? "Delete is disabled."}
+      </TooltipContent>
+    </Tooltip>
+  ) : iconOnly ? (
     <Tooltip>
       <TooltipTrigger asChild>
         <Button

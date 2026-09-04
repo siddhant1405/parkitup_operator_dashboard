@@ -28,6 +28,7 @@ function ThemeToggle() {
       type="button"
       variant="ghost"
       size="icon-sm"
+      className="rounded-lg"
       aria-label="Toggle theme"
       onClick={() => setTheme(isDark ? "light" : "dark")}
     >
@@ -50,17 +51,17 @@ export default function SitesLayout({
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b bg-background px-4 py-3">
+      <header className="sticky top-0 z-10 flex items-center justify-between bg-background px-4 py-3">
         <Link
           href="/sites"
           className="flex items-center gap-2 font-heading font-semibold"
         >
-          <MapPin className="h-5 w-5" />
+          <MapPin className="h-5 w-5 text-primary" />
           ParkItUp Operator
         </Link>
         <div className="flex items-center gap-1">
           <ThemeToggle />
-          <Button variant="ghost" size="sm" onClick={handleLogout}>
+          <Button variant="ghost" size="sm" className="rounded-lg" onClick={handleLogout}>
             <LogOut className="h-4 w-4" />
             Log out
           </Button>

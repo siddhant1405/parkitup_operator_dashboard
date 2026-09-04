@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, type MouseEvent } from "react"
+import { useEffect, useRef, useState, type MouseEvent } from "react"
 import { useRouter } from "next/navigation"
 import { useForm, useWatch, type FieldPath } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -48,6 +48,7 @@ import {
   internetQualityValues,
   lightingValues,
   parkingTypeValues,
+  paymentRecipientTypeValues,
   posDeviceValues,
   signageValues,
   siteFormSchema,
@@ -83,6 +84,7 @@ const STEPS: { key: string; label: string; fields: FieldPath<SiteFormValues>[] }
       "operatingHours.end.period",
       "peakPeriods",
       "surface",
+      "rwaPassSystem",
     ],
   },
   {
@@ -110,6 +112,10 @@ const STEPS: { key: string; label: string; fields: FieldPath<SiteFormValues>[] }
       "caretaker.name",
       "caretaker.phone",
       "workerCount",
+      "paymentRecipient.type",
+      "paymentRecipient.registeredName",
+      "gst.registered",
+      "gst.gstNumber",
     ],
   },
   {
@@ -146,10 +152,13 @@ function toFormValues(site: Site): SiteFormValues {
     signage: site.signage,
     restrictions: site.restrictions,
     owner: site.owner,
+    paymentRecipient: site.paymentRecipient,
+    gst: site.gst,
     caretaker: site.caretaker,
     workerCount: site.workerCount,
     pricingRules: site.pricingRules,
     riskFactors: site.riskFactors,
+    rwaPassSystem: site.rwaPassSystem,
     photos: site.photos,
   }
 }
@@ -196,6 +205,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
         router.push(`/sites/${created.id}/review`)
       } else if (site) {
         await updateSite.mutateAsync(values)
+        toast.success("Changes saved.")
         router.push(`/sites/${site.id}/review`)
       }
     } catch (err) {
@@ -257,8 +267,13 @@ export function SiteForm({ mode, site }: SiteFormProps) {
 
   async function handlePhotoSelect(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return
-    const dataUrls = await filesToDataUrls(fileList)
-    form.setValue("photos", [...photos, ...dataUrls])
+    try {
+      const dataUrls = await filesToDataUrls(fileList)
+      form.setValue("photos", [...photos, ...dataUrls])
+    } catch (err) {
+      console.error("Failed to process photo:", err)
+      toast.error("Couldn't add that photo. Make sure it's a valid image file.")
+    }
   }
 
   function removePhoto(index: number) {
@@ -267,6 +282,17 @@ export function SiteForm({ mode, site }: SiteFormProps) {
       photos.filter((_, i) => i !== index)
     )
   }
+
+  // Guard: only clear rwaPassSystem when parkingType transitions away from
+  // 'society' during the session, not on initial mount/render.
+  const prevParkingTypeRef = useRef(parkingType)
+  useEffect(() => {
+    const prev = prevParkingTypeRef.current
+    prevParkingTypeRef.current = parkingType
+    if (prev === "society" && parkingType !== "society") {
+      form.setValue("rwaPassSystem", undefined)
+    }
+  }, [parkingType, form])
 
   useEffect(() => {
     const entryGateCount = form.getValues("entryExit.entryGateCount")
@@ -302,7 +328,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
         className="mx-auto flex w-full max-w-2xl flex-col gap-6 pb-4"
       >
         <div>
-          <h1 className="font-heading text-2xl font-semibold">
+          <h1 className="font-heading text-4xl font-bold tracking-tight">
             {mode === "create" ? "Add new site" : "Edit site"}
           </h1>
           <p className="text-sm text-muted-foreground">
@@ -317,7 +343,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
         <div className="flex flex-col gap-6">
           <section
             className={cn(
-              "flex-col gap-4",
+              "surface-card flex-col gap-4 rounded-2xl p-6",
               currentStep === 0 ? "flex" : "hidden",
               "md:flex"
             )}
@@ -371,7 +397,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
 
           <section
             className={cn(
-              "flex-col gap-4",
+              "surface-card flex-col gap-4 rounded-2xl p-6",
               currentStep === 1 ? "flex" : "hidden",
               "md:flex"
             )}
@@ -568,13 +594,32 @@ export function SiteForm({ mode, site }: SiteFormProps) {
                 </FormItem>
               )}
             />
+            {parkingType === "society" && (
+              <FormField
+                control={form.control}
+                name="rwaPassSystem"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center gap-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value ?? false}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Uses RWA / society-issued parking pass system
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
+            )}
           </section>
 
           <Separator className="hidden md:block" />
 
           <section
             className={cn(
-              "flex-col gap-4",
+              "surface-card flex-col gap-4 rounded-2xl p-6",
               currentStep === 2 ? "flex" : "hidden",
               "md:flex"
             )}
@@ -709,20 +754,29 @@ export function SiteForm({ mode, site }: SiteFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>POS / payment device</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {posDeviceValues.map((value) => (
-                        <SelectItem key={value} value={value}>
-                          {posDeviceLabels[value]}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex flex-col gap-2">
+                    {posDeviceValues.map((value) => (
+                      <label
+                        key={value}
+                        className="flex items-center gap-2 text-sm"
+                      >
+                        <Checkbox
+                          checked={(field.value ?? []).includes(value)}
+                          onCheckedChange={(checked) => {
+                            const current = field.value ?? []
+                            if (checked) {
+                              field.onChange([...current, value])
+                            } else {
+                              field.onChange(
+                                current.filter((v: string) => v !== value)
+                              )
+                            }
+                          }}
+                        />
+                        {posDeviceLabels[value]}
+                      </label>
+                    ))}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
@@ -789,7 +843,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
 
           <section
             className={cn(
-              "flex-col gap-4",
+              "surface-card flex-col gap-4 rounded-2xl p-6",
               currentStep === 3 ? "flex" : "hidden",
               "md:flex"
             )}
@@ -864,13 +918,96 @@ export function SiteForm({ mode, site }: SiteFormProps) {
                 </FormItem>
               )}
             />
+
+            <Separator />
+
+            <h3 className="text-sm font-semibold">Payment recipient</h3>
+            <p className="text-xs text-muted-foreground">
+              The individual or company that will receive parking revenue — may differ from the property owner.
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="paymentRecipient.type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recipient type</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {paymentRecipientTypeValues.map((value) => (
+                          <SelectItem key={value} value={value}>
+                            {value.charAt(0).toUpperCase() + value.slice(1)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="paymentRecipient.registeredName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Registered name</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="e.g. Sunrise Parking Pvt Ltd"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <FormField
+              control={form.control}
+              name="gst.gstNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>GST No. (optional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. 07AABCU9603R1Z1"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="gst.registered"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center gap-2">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <FormLabel className="font-normal">
+                    GST registered
+                  </FormLabel>
+                </FormItem>
+              )}
+            />
           </section>
 
           <Separator className="hidden md:block" />
 
           <section
             className={cn(
-              "flex-col gap-4",
+              "surface-card flex-col gap-4 rounded-2xl p-6",
               currentStep === 4 ? "flex" : "hidden",
               "md:flex"
             )}
@@ -888,7 +1025,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
 
           <section
             className={cn(
-              "flex-col gap-4",
+              "surface-card flex-col gap-4 rounded-2xl p-6",
               currentStep === 5 ? "flex" : "hidden",
               "md:flex"
             )}
@@ -929,7 +1066,7 @@ export function SiteForm({ mode, site }: SiteFormProps) {
                       <img
                         src={photo}
                         alt={`Site photo ${index + 1}`}
-                        className="aspect-square w-full rounded-md object-cover"
+                        className="photo-frame aspect-square w-full object-cover"
                       />
                       <button
                         type="button"

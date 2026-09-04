@@ -17,7 +17,12 @@ export const surfaceValues = ["covered", "uncovered", "fenced"] as const
 
 export const cameraValues = ["covered", "open", "none"] as const
 
-export const siteStatusValues = ["draft", "submitted"] as const
+export const siteStatusValues = [
+  "draft",
+  "submitted",
+  "active",
+  "inactive",
+] as const
 
 export const timePeriodValues = ["AM", "PM"] as const
 
@@ -31,6 +36,8 @@ export const posDeviceValues = [
   "pos-machine",
   "mobile-app",
 ] as const
+
+export const paymentRecipientTypeValues = ["individual", "company"] as const
 
 export const internetQualityValues = [
   "unavailable",
@@ -58,6 +65,11 @@ const parkingTypeOtherRefinement = {
   message: "Please specify the parking type",
   path: ["parkingTypeOther"],
 }
+
+const gstSchema = z.object({
+  registered: z.boolean(),
+  gstNumber: z.string().optional(),
+})
 
 const timeOfDaySchema = z.object({
   time: z.string().regex(timeRegex, "Use H:MM, e.g. 9:00"),
@@ -118,7 +130,7 @@ const siteObjectSchema = z.object({
     guardroom: z.boolean(),
     cameras: z.enum(cameraValues),
   }),
-  posDevice: z.enum(posDeviceValues),
+  posDevice: z.array(z.enum(posDeviceValues)).min(1, "Select at least one payment method"),
   vendorNotes: z.string().optional(),
   internetQuality: z.enum(internetQualityValues),
   lighting: z.enum(lightingValues),
@@ -130,6 +142,11 @@ const siteObjectSchema = z.object({
     name: z.string().min(1, "Owner name is required"),
     phone: z.string().regex(phoneRegex, phoneErrorMessage),
   }),
+  paymentRecipient: z.object({
+    type: z.enum(paymentRecipientTypeValues),
+    registeredName: z.string().optional(),
+  }),
+  gst: gstSchema,
   caretaker: z.object({
     name: z.string().min(1, "Caretaker name is required"),
     phone: z.string().regex(phoneRegex, phoneErrorMessage),
@@ -139,7 +156,12 @@ const siteObjectSchema = z.object({
     .array(pricingRuleSchema)
     .min(1, "Add at least one pricing rule"),
   riskFactors: z.string(),
+  rwaPassSystem: z.boolean().optional(),
   photos: z.array(z.string()),
+  // 'active' / 'inactive' are set by a manager via the admin dashboard, not by
+  // operators. This app's localStorage mock is separate from the admin
+  // dashboard's — status changes made in admin won't reflect here until a
+  // real shared backend exists.
   status: z.enum(siteStatusValues),
   operatorId: z.string(),
   createdAt: z.string(),
@@ -186,7 +208,7 @@ export const defaultSiteFormValues: SiteFormValues = {
   peakPeriods: "",
   surface: "uncovered",
   security: { guardroom: false, cameras: "none" },
-  posDevice: "none",
+  posDevice: ["none"],
   vendorNotes: "",
   internetQuality: "good",
   lighting: "none",
@@ -195,9 +217,12 @@ export const defaultSiteFormValues: SiteFormValues = {
   signage: "none",
   restrictions: "",
   owner: { name: "", phone: "" },
+  paymentRecipient: { type: "individual", registeredName: "" },
+  gst: { registered: false, gstNumber: "" },
   caretaker: { name: "", phone: "" },
   workerCount: 0,
   pricingRules: [],
   riskFactors: "",
+  rwaPassSystem: undefined,
   photos: [],
 }

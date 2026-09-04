@@ -44,6 +44,11 @@ function SiteCard({ site }: { site: Site }) {
     site.parkingType === "other"
       ? site.parkingTypeOther || "Other"
       : parkingTypeLabels[site.parkingType]
+  const deleteBlocked = site.status !== "draft"
+  const deleteBlockedReason =
+    site.status === "submitted"
+      ? "This site has been submitted and is awaiting manager review — it can no longer be deleted."
+      : "This site has been reviewed by a manager and can no longer be deleted."
 
   function goToPhoto(event: React.MouseEvent, next: number) {
     event.stopPropagation()
@@ -54,9 +59,9 @@ function SiteCard({ site }: { site: Site }) {
   return (
     <Link
       href={`/sites/${site.id}`}
-      className="group block overflow-hidden rounded-xl bg-card ring-1 ring-foreground/10 transition-colors hover:ring-primary/40"
+      className="surface-card surface-card-interactive group block overflow-hidden rounded-2xl"
     >
-      <div className="relative aspect-[16/10] w-full bg-muted">
+      <div className="relative aspect-[16/10] w-full bg-muted stripe-texture">
         {currentPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -127,11 +132,13 @@ function SiteCard({ site }: { site: Site }) {
             siteId={site.id}
             iconOnly
             className="bg-black/50 backdrop-blur-sm hover:bg-black/70"
+            deleteDisabled={deleteBlocked}
+            deleteDisabledReason={deleteBlockedReason}
           />
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 p-4">
+      <div className="flex flex-col gap-3 p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-medium">{site.propertyName}</p>
@@ -139,20 +146,28 @@ function SiteCard({ site }: { site: Site }) {
               {site.address}
             </p>
           </div>
-          <SiteStatusBadge status={site.status} />
+          <div className="flex shrink-0 flex-wrap items-center gap-1.5">
+            <SiteStatusBadge status={site.status} />
+          </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <ParkingTypeIcon className="h-3.5 w-3.5" />
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="flex size-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400">
+              <ParkingTypeIcon className="h-3 w-3" />
+            </span>
             {parkingTypeLabel}
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Car className="h-3.5 w-3.5" />
+          <span className="inline-flex items-center gap-1.5">
+            <span className="flex size-5 items-center justify-center rounded-full bg-violet-500/10 text-violet-600 dark:bg-violet-400/15 dark:text-violet-400">
+              <Car className="h-3 w-3" />
+            </span>
             {site.totalSlots} slots
           </span>
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-3.5 w-3.5" />
+          <span className="inline-flex items-center gap-1.5">
+            <span className="flex size-5 items-center justify-center rounded-full bg-teal-500/10 text-teal-600 dark:bg-teal-400/15 dark:text-teal-400">
+              <Clock className="h-3 w-3" />
+            </span>
             {formatOperatingHours(site.operatingHours)}
           </span>
         </div>
@@ -167,7 +182,7 @@ export function SitesList() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="font-heading text-2xl font-semibold">My sites</h1>
+        <h1 className="font-heading text-4xl font-bold tracking-tight">My sites</h1>
         <Button asChild size="sm">
           <Link href="/sites/new">
             <Plus className="h-4 w-4" />
@@ -186,6 +201,7 @@ export function SitesList() {
           icon={MapPin}
           title="No sites logged yet"
           description="Visit a parking site and add your first inspection to see it here."
+          className="stripe-texture rounded-2xl"
           action={
             <Button asChild>
               <Link href="/sites/new">Add new site</Link>

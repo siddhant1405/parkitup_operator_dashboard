@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
+import { Separator } from "@/components/ui/separator"
 import { useUpdateSite } from "@/features/sites/api/mutations"
 import { DeleteSiteButton } from "./DeleteSiteButton"
 import { SiteStatusBadge } from "./SiteStatusBadge"
@@ -49,7 +50,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
 
   if (photos.length === 0) {
     return (
-      <div className="flex aspect-square w-full max-w-md flex-col items-center justify-center gap-2 rounded-lg bg-muted text-muted-foreground">
+      <div className="stripe-texture flex aspect-square w-full max-w-md flex-col items-center justify-center gap-2 rounded-lg bg-muted text-muted-foreground">
         <ImageOff className="h-8 w-8" />
         <p className="text-sm">No photos</p>
       </div>
@@ -64,7 +65,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3">
-      <div className="relative aspect-square w-full overflow-hidden rounded-lg bg-muted">
+      <div className="photo-frame-lg relative aspect-square w-full overflow-hidden bg-muted">
         <button
           type="button"
           onClick={() => setLightboxOpen(true)}
@@ -135,7 +136,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
               type="button"
               onClick={() => goTo(thumbIndex)}
               className={cn(
-                "h-16 w-16 shrink-0 overflow-hidden rounded-md ring-2 transition-colors",
+                "photo-frame h-16 w-16 shrink-0 overflow-hidden ring-2 transition-colors",
                 thumbIndex === index
                   ? "ring-primary"
                   : "ring-transparent hover:ring-foreground/20"
@@ -160,7 +161,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
             <img
               src={photos[index]}
               alt={`Site photo ${index + 1}`}
-              className="max-h-[70vh] w-full rounded-md object-contain"
+              className="photo-frame max-h-[70vh] w-full object-contain"
             />
             {hasMultiplePhotos && (
               <>
@@ -211,7 +212,7 @@ function DetailSection({
   children: React.ReactNode
 }) {
   return (
-    <section className="flex flex-col gap-4 rounded-lg border p-4">
+    <section className="surface-card flex flex-col gap-4 rounded-2xl p-6">
       <h2 className="font-heading text-base font-semibold">{title}</h2>
       {children}
     </section>
@@ -267,7 +268,7 @@ export function SiteDetail({ mode, site }: SiteDetailProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="font-heading text-3xl font-semibold">
+            <h1 className="font-heading text-5xl font-bold tracking-tight">
               {site.propertyName}
             </h1>
             <SiteStatusBadge status={site.status} />
@@ -319,7 +320,16 @@ export function SiteDetail({ mode, site }: SiteDetailProps) {
                   Edit
                 </Link>
               </Button>
-              <DeleteSiteButton siteId={site.id} size="sm" />
+              <DeleteSiteButton
+                siteId={site.id}
+                size="sm"
+                deleteDisabled={site.status !== "draft"}
+                deleteDisabledReason={
+                  site.status === "submitted"
+                    ? "This site has been submitted and is awaiting manager review — it can no longer be deleted."
+                    : "This site has been reviewed by a manager and can no longer be deleted."
+                }
+              />
             </>
           )}
         </div>
@@ -335,6 +345,12 @@ export function SiteDetail({ mode, site }: SiteDetailProps) {
           <Field label="Operating hours" value={operatingHoursLabel} />
           <Field label="Peak periods" value={site.peakPeriods} />
           <Field label="Surface" value={capitalize(site.surface)} />
+          {site.parkingType === "society" && site.rwaPassSystem != null && (
+            <Field
+              label="RWA / society pass system"
+              value={site.rwaPassSystem ? "Yes" : "No"}
+            />
+          )}
         </dl>
       </DetailSection>
 
@@ -354,7 +370,7 @@ export function SiteDetail({ mode, site }: SiteDetailProps) {
           <Field label="Signage" value={signageLabels[site.signage]} />
           <Field
             label="POS / payment device"
-            value={posDeviceLabels[site.posDevice]}
+            value={site.posDevice.map((v) => posDeviceLabels[v]).join(", ")}
           />
           <Field label="Vendor & pricing notes" value={site.vendorNotes} />
           <Field
@@ -372,6 +388,25 @@ export function SiteDetail({ mode, site }: SiteDetailProps) {
           <Field label="Caretaker" value={site.caretaker.name} />
           <Field label="Caretaker phone" value={site.caretaker.phone} />
           <Field label="Workers on site" value={site.workerCount} />
+        </dl>
+        <Separator />
+        <h3 className="text-sm font-semibold">Payment recipient</h3>
+        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field
+            label="Recipient type"
+            value={capitalize(site.paymentRecipient.type)}
+          />
+          <Field
+            label="Registered name"
+            value={site.paymentRecipient.registeredName}
+          />
+        </dl>
+        <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="GST No." value={site.gst.gstNumber} />
+          <Field
+            label="GST status"
+            value={site.gst.registered ? "GST registered" : "Not GST registered"}
+          />
         </dl>
       </DetailSection>
 
