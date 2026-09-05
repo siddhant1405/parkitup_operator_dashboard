@@ -4,6 +4,10 @@ import type { NextRequest } from "next/server"
 import { AUTH_COOKIE_NAME } from "@/lib/constants"
 
 export function proxy(request: NextRequest) {
+  // Placeholder auth gate: any non-empty cookie value counts as authenticated.
+  // There is no token verification because there is no backend to verify
+  // against yet — see lib/auth.ts (sets the cookie) and app/login/page.tsx
+  // (accepts any non-empty credentials).
   const isAuthed = !!request.cookies.get(AUTH_COOKIE_NAME)?.value
   const isLoginPage = request.nextUrl.pathname === "/login"
 

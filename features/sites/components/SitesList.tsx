@@ -61,7 +61,7 @@ function SiteCard({ site }: { site: Site }) {
       href={`/sites/${site.id}`}
       className="surface-card surface-card-interactive group block overflow-hidden rounded-2xl"
     >
-      <div className="relative aspect-[16/10] w-full bg-muted stripe-texture">
+      <div className="surface-placeholder relative aspect-[16/10] w-full">
         {currentPhoto ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -153,21 +153,15 @@ function SiteCard({ site }: { site: Site }) {
 
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
-            <span className="flex size-5 items-center justify-center rounded-full bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400">
-              <ParkingTypeIcon className="h-3 w-3" />
-            </span>
+            <ParkingTypeIcon className="h-3.5 w-3.5 text-muted-foreground" />
             {parkingTypeLabel}
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="flex size-5 items-center justify-center rounded-full bg-violet-500/10 text-violet-600 dark:bg-violet-400/15 dark:text-violet-400">
-              <Car className="h-3 w-3" />
-            </span>
+            <Car className="h-3.5 w-3.5 text-muted-foreground" />
             {site.totalSlots} slots
           </span>
           <span className="inline-flex items-center gap-1.5">
-            <span className="flex size-5 items-center justify-center rounded-full bg-teal-500/10 text-teal-600 dark:bg-teal-400/15 dark:text-teal-400">
-              <Clock className="h-3 w-3" />
-            </span>
+            <Clock className="h-3.5 w-3.5 text-muted-foreground" />
             {formatOperatingHours(site.operatingHours)}
           </span>
         </div>
@@ -201,7 +195,7 @@ export function SitesList() {
           icon={MapPin}
           title="No sites logged yet"
           description="Visit a parking site and add your first inspection to see it here."
-          className="stripe-texture rounded-2xl"
+          className="surface-card rounded-2xl"
           action={
             <Button asChild>
               <Link href="/sites/new">Add new site</Link>

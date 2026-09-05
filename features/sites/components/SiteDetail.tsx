@@ -50,7 +50,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
 
   if (photos.length === 0) {
     return (
-      <div className="stripe-texture flex aspect-square w-full max-w-md flex-col items-center justify-center gap-2 rounded-lg bg-muted text-muted-foreground">
+      <div className="surface-placeholder flex aspect-square w-full max-w-md flex-col items-center justify-center gap-2 rounded-lg text-muted-foreground">
         <ImageOff className="h-8 w-8" />
         <p className="text-sm">No photos</p>
       </div>
@@ -65,7 +65,7 @@ function PhotoGallery({ photos }: { photos: string[] }) {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col items-center gap-3">
-      <div className="photo-frame-lg relative aspect-square w-full overflow-hidden bg-muted">
+      <div className="photo-frame-lg surface-placeholder relative aspect-square w-full overflow-hidden">
         <button
           type="button"
           onClick={() => setLightboxOpen(true)}
@@ -373,6 +373,7 @@ export function SiteDetail({ mode, site }: SiteDetailProps) {
             value={site.posDevice.map((v) => posDeviceLabels[v]).join(", ")}
           />
           <Field label="Vendor & pricing notes" value={site.vendorNotes} />
+          <Field label="Competitors" value={site.competitorNotes} />
           <Field
             label="Internet / network"
             value={internetQualityLabels[site.internetQuality]}
@@ -402,11 +403,11 @@ export function SiteDetail({ mode, site }: SiteDetailProps) {
           />
         </dl>
         <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Field label="GST No." value={site.gst.gstNumber} />
           <Field
             label="GST status"
             value={site.gst.registered ? "GST registered" : "Not GST registered"}
           />
+          <Field label="GST No." value={site.gst.gstNumber} />
         </dl>
       </DetailSection>
 

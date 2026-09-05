@@ -1,10 +1,11 @@
 "use client"
 
 import { useSyncExternalStore } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
-import { LogOut, MapPin, Moon, Sun } from "lucide-react"
+import { LogOut, Moon, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { clearAuthCookie } from "@/lib/auth"
@@ -56,7 +57,7 @@ export default function SitesLayout({
           href="/sites"
           className="flex items-center gap-2 font-heading font-semibold"
         >
-          <MapPin className="h-5 w-5 text-primary" />
+          <Image src="/logo.svg" alt="" width={20} height={20} className="h-5 w-5" />
           ParkItUp Operator
         </Link>
         <div className="flex items-center gap-1">

@@ -99,7 +99,7 @@ function normalizeSite(site: LegacySite): Site {
     ? (rawPos as Site["posDevice"])
     : typeof rawPos === "string"
       ? [rawPos as Site["posDevice"][number]]
-      : ["none"]
+      : (["none"] as unknown as Site["posDevice"])
 
   const { approvalStatus, ...rest } = site
 
@@ -127,6 +127,9 @@ function normalizeSite(site: LegacySite): Site {
   }
 }
 
+// DELAY_MS simulates network latency so loading states are exercised in the
+// UI even though calls are actually synchronous localStorage reads/writes.
+
 export async function getSites(): Promise<Site[]> {
   await sleep(DELAY_MS)
   return readAll()
@@ -139,6 +142,9 @@ export async function getSite(id: string): Promise<Site | undefined> {
   return readAll().find((site) => site.id === id)
 }
 
+// New sites always start life as 'draft', owned by the hardcoded
+// CURRENT_OPERATOR_ID (see lib/constants.ts), with id/timestamps generated
+// here rather than by a server.
 export async function createSite(values: SiteFormValues): Promise<Site> {
   await sleep(DELAY_MS)
   const now = new Date().toISOString()
@@ -186,10 +192,12 @@ export async function deleteSite(id: string): Promise<void> {
   if (index === -1) {
     throw new Error(`Site ${id} not found`)
   }
+  const deletedAt = new Date().toISOString()
   sites[index] = {
     ...sites[index],
     deleted: true,
-    updatedAt: new Date().toISOString(),
+    deletedAt,
+    updatedAt: deletedAt,
   }
   writeAll(sites)
 }
@@ -417,6 +425,49 @@ function createSeedSites(): Site[] {
       riskFactors: "",
       photos: [],
       status: "submitted",
+    },
+    {
+      ...base,
+      id: "seed-pacific-mall-nsp",
+      propertyName: "Pacific Mall NSP",
+      address: "Sector 18, Noida, Uttar Pradesh 201301",
+      gps: { lat: 28.5895, lng: 77.3830 },
+      parkingType: "commercial",
+      parkingTypeOther: "",
+      entryExit: { configuration: "separate", entryGateCount: 3, exitGateCount: 3 },
+      totalSlots: 500,
+      operatingHours: {
+        start: { time: "9:00", period: "AM" },
+        end: { time: "11:00", period: "PM" },
+      },
+      peakPeriods: "Weekends 11 AM - 9 PM",
+      surface: "covered",
+      security: { guardroom: true, cameras: "covered" },
+      posDevice: ["pos-machine", "mobile-app"],
+      vendorNotes: "Prime shopping destination. CCTV in all zones. Rapid payment system.",
+      internetQuality: "excellent",
+      lighting: "full",
+      boomBarrier: true,
+      anpr: true,
+      signage: "full",
+      restrictions: "EV charging available. No heavy commercial vehicles.",
+      owner: { name: "Amit Singh", phone: "9876543210" },
+      paymentRecipient: {
+        type: "company",
+        registeredName: "Pacific Mall Management Ltd",
+      },
+      gst: { registered: true, gstNumber: "09AABCP1234A1Z0" },
+      caretaker: { name: "Rahul Kumar", phone: "9876543211" },
+      workerCount: 12,
+      pricingRules: [
+        { id: "pr-8", dayType: "weekday", rateType: "hourly", amount: 50 },
+        { id: "pr-9", dayType: "weekend", rateType: "hourly", amount: 75 },
+        { id: "pr-10", dayType: "holiday", rateType: "hourly", amount: 75 },
+      ],
+      riskFactors: "",
+      rwaPassSystem: false,
+      photos: [],
+      status: "active",
     },
   ]
 }

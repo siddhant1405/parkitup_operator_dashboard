@@ -99,6 +99,7 @@ const STEPS: { key: string; label: string; fields: FieldPath<SiteFormValues>[] }
       "signage",
       "posDevice",
       "vendorNotes",
+      "competitorNotes",
       "internetQuality",
       "restrictions",
     ],
@@ -145,6 +146,7 @@ function toFormValues(site: Site): SiteFormValues {
     security: site.security,
     posDevice: site.posDevice,
     vendorNotes: site.vendorNotes ?? "",
+    competitorNotes: site.competitorNotes ?? "",
     internetQuality: site.internetQuality,
     lighting: site.lighting,
     boomBarrier: site.boomBarrier,
@@ -790,6 +792,22 @@ export function SiteForm({ mode, site }: SiteFormProps) {
                   <FormControl>
                     <Textarea
                       placeholder="e.g. third-party company associated with this site, POS provider name, pricing model details."
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="competitorNotes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Competitors (optional)</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="e.g. another parking company already operating at or near this site."
                       {...field}
                     />
                   </FormControl>

@@ -60,25 +60,25 @@
 }
 
 :root {
-  --background: #F7F6F3;
-  --foreground: #1C1D1B;
-  --card: #ffffff;
-  --card-foreground: #1C1D1B;
-  --popover: #ffffff;
-  --popover-foreground: #1C1D1B;
-  --primary: #C7752E;
-  --primary-foreground: #ffffff;
-  --secondary: #edebe5;
-  --secondary-foreground: #1C1D1B;
-  --muted: #eae8e2;
-  --muted-foreground: #6b6b66;
-  --accent: #f5e0c8;
-  --accent-foreground: #6b3d14;
+  --background: #F5F5F4;
+  --foreground: #18181A;
+  --card: #FFFFFF;
+  --card-foreground: #18181A;
+  --popover: #FFFFFF;
+  --popover-foreground: #18181A;
+  --primary: #18181A;
+  --primary-foreground: #FFFFFF;
+  --secondary: #ECECEB;
+  --secondary-foreground: #18181A;
+  --muted: #ECECEB;
+  --muted-foreground: #6B6B6C;
+  --accent: #ECECEB;
+  --accent-foreground: #18181A;
   --destructive: #c1502e;
   --destructive-foreground: #ffffff;
-  --border: #e2dfd7;
-  --input: #e2dfd7;
-  --ring: #C7752E;
+  --border: #E2E2E0;
+  --input: #E2E2E0;
+  --ring: #9A9A98;
   --success: #3f8f5f;
   --success-foreground: #ffffff;
   --badge-draft-bg: #f5e0c8;
@@ -95,36 +95,36 @@
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
   --radius: 0.625rem;
-  --sidebar: #F7F6F3;
-  --sidebar-foreground: #1C1D1B;
-  --sidebar-primary: #C7752E;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f5e0c8;
-  --sidebar-accent-foreground: #6b3d14;
-  --sidebar-border: #e2dfd7;
-  --sidebar-ring: #C7752E;
+  --sidebar: #F5F5F4;
+  --sidebar-foreground: #18181A;
+  --sidebar-primary: #18181A;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #ECECEB;
+  --sidebar-accent-foreground: #18181A;
+  --sidebar-border: #E2E2E0;
+  --sidebar-ring: #9A9A98;
 }
 
 .dark {
-  --background: #111312;
-  --foreground: #f7f6f3;
-  --card: #1A1C1B;
-  --card-foreground: #f7f6f3;
-  --popover: #171a18;
-  --popover-foreground: #f7f6f3;
-  --primary: #e8a23d;
-  --primary-foreground: #111312;
-  --secondary: #1c1f1d;
-  --secondary-foreground: #f7f6f3;
-  --muted: #1d201f;
-  --muted-foreground: #9a9c98;
-  --accent: #2e2412;
-  --accent-foreground: #f0b45f;
+  --background: #0A0A0B;
+  --foreground: #F5F5F4;
+  --card: #17181A;
+  --card-foreground: #F5F5F4;
+  --popover: #17181A;
+  --popover-foreground: #F5F5F4;
+  --primary: #F5F5F4;
+  --primary-foreground: #111112;
+  --secondary: #1F2022;
+  --secondary-foreground: #F5F5F4;
+  --muted: #1F2022;
+  --muted-foreground: #9A9A9C;
+  --accent: #1F2022;
+  --accent-foreground: #F5F5F4;
   --destructive: #c1502e;
   --destructive-foreground: #ffffff;
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: #e8a23d;
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 12%);
+  --ring: #6B6B6D;
   --success: #3f8f5f;
   --success-foreground: #111312;
   --badge-draft-bg: #3a2a12;
@@ -140,14 +140,14 @@
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
   --chart-5: oklch(0.269 0 0);
-  --sidebar: #171a18;
-  --sidebar-foreground: #f7f6f3;
-  --sidebar-primary: #e8a23d;
-  --sidebar-primary-foreground: #111312;
-  --sidebar-accent: #2e2412;
-  --sidebar-accent-foreground: #f0b45f;
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: #e8a23d;
+  --sidebar: #17181A;
+  --sidebar-foreground: #F5F5F4;
+  --sidebar-primary: #F5F5F4;
+  --sidebar-primary-foreground: #111112;
+  --sidebar-accent: #1F2022;
+  --sidebar-accent-foreground: #F5F5F4;
+  --sidebar-border: oklch(1 0 0 / 8%);
+  --sidebar-ring: #6B6B6D;
 }
 
 @layer base {
@@ -174,40 +174,26 @@
 }
 
 @layer components {
-  /* Elevated card surface: layered shadow + a card bg that steps off the page bg. */
+  /* Flat card surface: no border, no shadow, one step lighter than the page bg. */
   .surface-card {
-    @apply bg-card border border-border shadow-md dark:shadow-lg dark:shadow-black/40;
+    @apply bg-card;
   }
 
-  /* Subtle lift + stronger shadow for interactive cards (SitesList). */
+  /* Interactive cards (SitesList) get a subtle flat hover tint, no lift/shadow/border. */
   .surface-card-interactive {
-    @apply transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:border-primary/40 dark:hover:shadow-black/50;
+    @apply transition-colors duration-200 hover:bg-[color-mix(in_oklch,var(--card),var(--foreground)_4%)];
   }
 
-  /* Low-contrast diagonal lane-marking texture — header/nav and empty states only. */
-  .stripe-texture {
-    background-image: repeating-linear-gradient(
-      -45deg,
-      color-mix(in oklch, var(--foreground) 7%, transparent) 0px,
-      color-mix(in oklch, var(--foreground) 7%, transparent) 1px,
-      transparent 1px,
-      transparent 13px
-    );
+  /* Two-tone placeholder box within a card: distinct, slightly lighter gray than the card. */
+  .surface-placeholder {
+    @apply bg-[color-mix(in_oklch,var(--card),var(--foreground)_6%)];
   }
 
-  /* Gradient treatment reserved for primary action buttons. */
-  .gradient-accent {
-    background-image: linear-gradient(135deg, #c7752e, #a85f22);
-  }
-  .dark .gradient-accent {
-    background-image: linear-gradient(135deg, #e8a23d, #c6821f);
-  }
-
-  /* Consistent "framed documentation" treatment for photos. */
+  /* Flat framing for photos — rounded corners only, no border/shadow. */
   .photo-frame {
-    @apply rounded-lg border border-border shadow-sm;
+    @apply rounded-lg;
   }
   .photo-frame-lg {
-    @apply rounded-lg border border-border shadow-md;
+    @apply rounded-lg;
   }
 }

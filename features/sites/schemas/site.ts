@@ -31,7 +31,6 @@ export const dayTypeValues = ["weekday", "weekend", "holiday", "all"] as const
 export const rateTypeValues = ["hourly", "daily", "one-time"] as const
 
 export const posDeviceValues = [
-  "none",
   "manual",
   "pos-machine",
   "mobile-app",
@@ -132,6 +131,7 @@ const siteObjectSchema = z.object({
   }),
   posDevice: z.array(z.enum(posDeviceValues)).min(1, "Select at least one payment method"),
   vendorNotes: z.string().optional(),
+  competitorNotes: z.string().optional(),
   internetQuality: z.enum(internetQualityValues),
   lighting: z.enum(lightingValues),
   boomBarrier: z.boolean(),
@@ -167,6 +167,14 @@ const siteObjectSchema = z.object({
   createdAt: z.string(),
   updatedAt: z.string(),
   deleted: z.boolean().default(false),
+  // Stamped exactly once when status first becomes 'active'/'inactive'/deleted.
+  // activatedAt and inactivatedAt are written by the admin dashboard's approval
+  // flow, not by this app; deletedAt is written by this app's deleteSite. All
+  // three must stay on this type since both apps read/write the same Site
+  // record once a real shared backend exists.
+  activatedAt: z.string().optional(),
+  inactivatedAt: z.string().optional(),
+  deletedAt: z.string().optional(),
 })
 
 export const siteSchema = siteObjectSchema.refine(
@@ -184,6 +192,9 @@ export const siteFormSchema = siteObjectSchema
     createdAt: true,
     updatedAt: true,
     deleted: true,
+    activatedAt: true,
+    inactivatedAt: true,
+    deletedAt: true,
   })
   .refine(requireParkingTypeOther, parkingTypeOtherRefinement)
 
@@ -208,8 +219,9 @@ export const defaultSiteFormValues: SiteFormValues = {
   peakPeriods: "",
   surface: "uncovered",
   security: { guardroom: false, cameras: "none" },
-  posDevice: ["none"],
+  posDevice: ["manual"],
   vendorNotes: "",
+  competitorNotes: "",
   internetQuality: "good",
   lighting: "none",
   boomBarrier: false,

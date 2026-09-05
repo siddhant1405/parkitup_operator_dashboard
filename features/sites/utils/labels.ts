@@ -23,7 +23,6 @@ export const parkingTypeLabels: Record<
 }
 
 export const posDeviceLabels: Record<(typeof posDeviceValues)[number], string> = {
-  none: "None",
   manual: "Manual / cash",
   "pos-machine": "POS machine",
   "mobile-app": "Mobile app",
